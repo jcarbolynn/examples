@@ -1,0 +1,217 @@
+#lab 7
+
+setwd("~/semester 5/WIS 4601/wk7/lab 7")
+
+#############################################
+#review linear regression
+
+kestrels = read.table("kestrels_states (1).txt", header = T)
+
+mod.kestrel = lm(Beak~Mass * State, data = kestrels)
+summary(mod.kestrel)
+
+k = coef(mod.kestrel)
+k
+
+#FL
+FLslope = k[2] + k[6]
+FLint = k[1] + k[3]
+#slope = .23
+#intercept = 8.56
+
+#AL
+ALslope = k[2]
+ALint = k[1]
+#slope = .24
+#interccept = 7.46
+
+#equation is (to my understanding)
+#y = k1(intercept1) + k3(intercept2) + k4(intercept3) + k5(intercept4) +
+#    k2(slope2)     + k6(slope2)     + k7(slope3)     + k8(slope4)
+#in each case stuff in () is just to indicate what it means
+#other than k1 and k2, the alues indicate difference from k1 and k2
+
+#equation actually:
+#y = b0 + b2(StateFL) + b3(StateGA) + b4(StateSC)
+#    b1(Mass) + b5(Mass x StateFL) + b6(Mass x StateGA) + b7(Mass x StateSC)
+
+#y = b0(StateAL)        + b2(StateFL)        + b3(StateGA)        + b4(StateSC)
+#    b1(Mass x StateAL) + b5(Mass x StateFL) + b6(Mass x StateGA) + b7(Mass x StateSC)
+
+
+#each state is either 1 or 0 if included or not
+#first row is for intercept
+#second row is for slope
+#y = 7.46(AL)  +   1.10(FL) +   5.97(GA)   +  3.52(SC)   +
+#    0.24(AL)x + -0.011(FL)x + -0.051(GA)x + -0.032(SC)x
+
+
+#################    ####################
+
+#FL
+#y = B0 + B1(Mass) + B2(FL) + B4(Mass*FL)
+#intercept = B0 + B2
+7.45893 + 1.09879
+#8.55772
+
+#slope = B1 + B4
+.23867 - .01147
+#.2272
+
+#AL
+#y = B0 + B1(Mass)
+#intercept = 7.4589
+#slope = 0.23867
+
+
+#############################################
+#logistic regression
+#linear regression only if normally distributed response variable
+#logistic for binary response variable
+
+AnoleInfect = read.csv("anolis_infection.csv", header = T)
+head(AnoleInfect)
+windows()
+plot(AnoleInfect$weight, AnoleInfect$infection,
+     xlab = "Weight (g)",
+     ylab = "Infection")
+#cannot fit linear regression because binary results
+
+#logistic regression model with glm()
+#response variable: binomial distribution
+iw.anole.log = glm(infection~weight, family = binomial,
+                data = AnoleInfect)
+summary(iw.anole.log)
+#slope = 0.28
+#intercept = -3.37
+#is different from zero because low p value and standard error is smaller than estimate
+#this takes a log, glm needs normal distribution, taking the log of our data makes it normal
+#how can it have one slope
+#glm because it can have different curves
+#know it is binmoial because infected/not
+#if it has less of a curve, the line for the un transformed data will have less of a slope
+
+#this un does the log so it is your actual data again
+#exponentiate the slope estimate
+exp(coef(iw.anole.log)[2])
+#now slope = 1.32
+#odds of getting infected increase by 1.32 for every unit increase(g) in body weight
+#can say this because above we determined it follows a logistic function
+
+#########################################################################
+#logistic regression plot
+
+#sequencec data, put it in order
+weight.pred = seq(min(AnoleInfect$weight), max(AnoleInfect$weight), length = 100)
+#put it into a table kind of, an r table
+isdat = data.frame(weight = weight.pred)
+
+#predict, using that table we just made
+iwprd = predict(iw.anole.log, newdata = isdat, type = "response", se.fit = T)
+iwuppr = iwprd$fit + 2 * iwprd$se.fit
+iwlwr = iwprd$fit - 2 * iwprd$se.fit
+
+#plot
+jpeg("infection and weight.jpeg")
+plot(weight.pred, iwprd$fit, type = 'l',
+     col = "black", xlab = "Weight (g)", ylab = "Probability of Infection")
+#add confidence intervals
+lines(weight.pred, iwuppr, col = "red")
+lines(weight.pred, iwlwr, col = "red")
+dev.off()
+
+par(mfrow = c(1,2))
+
+
+summary(iw.anole.log)
+#intercept -3.37
+#slope 0.28
+
+#are you not supposed to use the log data?
+#or is model.log including the log
+
+#intercept it -3.37
+#slope is .28
+#odds ratio is 1.32 (the regular slope, after you log it to make it normal and then turn it back again)
+#odds ratio means for every increase in body size the animal is 1.11 times momre likely to be infected
+
+
+###########################################################
+#poisson regression
+
+AnoleTemp = read.csv("anolis_temp.csv", header = T)
+head(AnoleTemp)
+#know what the columns are called
+
+windows()
+plot(abundance~temperature, data = AnoleTemp,
+     xlab = "temperature (C)",
+     ylab = "lizard abundance")
+#count data so use poisson distribution
+#check assumptions (mean = variancec, goodness of fit)
+
+mean(AnoleTemp$abundance)
+#1.30
+var(AnoleTemp$abundance)
+#1.40
+
+#goodness of fit
+library(vcd)
+summary(goodfit(AnoleTemp$abundance,
+                type = "poisson",
+                method = "ML"))
+#H0: does fit distribution
+#Ha: does not
+#p value = 0.808 so not enough evidence to reject null
+#accept that it does fit poisson
+
+#so continue with poisson model
+temp.pois = glm(abundance~temperature, data = AnoleTemp,
+               family = "poisson")
+#view results
+summary(temp.pois)
+#H0: that they are not sign diff from zero
+#Ha: they are diff from zero
+#intercecpt 2.865, p val 0.0957
+#slope: -0.09211, p val 0.1318
+#neither are different from zero so not significant relationship between teperature and abundane
+
+
+#to get odds ratio have to take exponent
+#to test the data had to take the log,
+#but odds ratio is slope of regular data
+coef(summary(temp.pois))
+coef(temp.pois)[2]
+exp(coef(temp.pois)[2])
+#odds ration is 0.912
+#1-.912 = .09 (9%)
+#lizard abundance decreases 9% for every degree increase in temperature
+
+#make a figure
+#orders data
+temp.pred = seq(min(AnoleTemp$temperature), max(AnoleTemp$temperature),
+                  length = 100)
+#makes it data frame, chart thing
+tdat = data.frame(temperature = temp.pred)
+#"temperature" refers to old dataset
+
+#the predictions
+tline = predict(temp.pois, newdata = tdat,
+                 type = "response",
+                 se.fit = T)
+#confidence  intervals
+tupper = tline$fit + 2 * tline$se.fit
+tlower = tline$fit - 2 * tline$se.fit
+
+#now plot
+windows()
+jpeg("abundance and temperature.jpeg")
+plot(temp.pred, tline$fit,
+     xlab = "temperature (C)",
+     ylab = "lizard abundance",
+     type = "l",
+     ylim = c(0, 3))
+#points(AnoleTemp$temperature, AnoleTemp$abundance)
+lines(temp.pred, tupper, col = "red")
+lines(temp.pred, tlower, col = "red")
+dev.off()
