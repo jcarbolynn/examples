@@ -1,0 +1,78 @@
+import java.util.Scanner;
+
+public class mad_libs {
+    public static void main(String [] args){
+        Scanner scnr = new Scanner(System.in);
+        String year;
+        String nephew;
+        String adj1;
+        String magicalCreature;
+        String name;
+        String name2;
+        String name3;
+        String adj2;
+        String creatureName;
+        String adj3;
+        String foodNumber;
+        String unitMeasurement;
+        String creatureFood;
+        String unitTime;
+
+        System.out.print("Enter a number: ");
+        year = scnr.nextLine();
+
+        System.out.print("Enter a name: ");
+        nephew = scnr.nextLine();
+
+        System.out.print("Enter an adjective: ");
+        adj1 = scnr.nextLine();
+
+        System.out.print("Enter a magical creature: ");
+        magicalCreature = scnr.nextLine();
+
+        System.out.print("Enter a mean name: ");
+        name = scnr.nextLine();
+
+        System.out.print("Enter a second mean name: ");
+        name2 = scnr.nextLine();
+
+        System.out.print("Enter a third mean name: ");
+        name3 = scnr.nextLine();
+
+        System.out.print("Enter an adjective: ");
+        adj2 = scnr.nextLine();
+
+        System.out.print("Enter a number: ");
+        foodNumber = scnr.nextLine();
+
+        System.out.print("Enter a unit of measurement: ");
+        unitMeasurement = scnr.nextLine();
+
+        System.out.print("Enter your favorite food: ");
+        creatureFood = scnr.nextLine();
+
+        System.out.print("Enter a unit of time: ");
+        unitTime = scnr.nextLine();
+
+        System.out.print("Enter a pet name: ");
+        creatureName = scnr.nextLine();
+
+        System.out.print("Enter an adjective: ");
+        adj3 = scnr.nextLine();
+
+        System.out.print("It was on this day " + year + " years ago");
+        System.out.println(" that my " + adj1 + " nephew, " + nephew + ", first discovered the " + magicalCreature + ".  ");
+        System.out.println("Of course he was relentlessly mocked for it, no one believed him.  ");
+        System.out.print("The villagers called him " + name + ", " + name2 + ", or my personal favorite, " + name3 + ".  ");
+        System.out.println("Still, " + adj2 + " " + nephew + " went on caring for it.  ");
+        System.out.print("He fed it " + foodNumber + " " + unitMeasurement + "s of " + creatureFood + " per " + unitTime + ".  ");
+        System.out.println(nephew + " even gave it a name, " + creatureName + ", against my " + adj3 + " judgement.  ");
+
+//at first all scnr were scnr.next() not scnr.nextLine()
+//entered "3 inch fool" for first mean name
+//put 3 as first mean name, inch as second mean name, fool as third
+//also automatically printed mean name 2 and mean name 3 and adject tive lines out automatically while waiting for input for adjective
+
+    }
+
+}
