@@ -1,0 +1,20 @@
+import java.util.Scanner;
+
+public class replace {
+    public static void main(String[] args) {
+        Scanner input = new Scanner (System.in);
+        String sentence;
+        String whatever;
+
+        System.out.print("Enter a sentence: ");
+        sentence = input.nextLine();
+
+        System.out.print("Enter a character: ");
+        whatever = input.next();
+
+        sentence = sentence.replace(sentence.charAt(3), whatever.charAt(0));
+        System.out.println(sentence);
+    }
+}
+
+//no error handling (if no 3rd character)
