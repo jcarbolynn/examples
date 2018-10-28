@@ -1,0 +1,225 @@
+import java.util.Scanner;
+
+public class Blackjack {
+
+    public static void main(String[] args) {
+
+        Scanner decision = new Scanner(System.in);
+
+        P1Random rng = new P1Random();
+        int playerCard;
+        int playerHand = 0;
+        int dealerHand = 0;
+        int gameNumber = 1;
+        int playerWin = 0;
+        int playerLose = 0;
+        int dealerWin = 0;
+        int tieGame = 0;
+        int totalGames = 0;
+        boolean restart = false; //to make it restart automatically? for 21 or bust
+
+        int input = 0;
+        System.out.println("\n" + "START GAME #" + gameNumber);
+        do {
+
+            restart = false;
+
+            /*playerCard = rng.nextInt(13) + 1;
+                if (playerCard == 1)
+                    System.out.print("Your card is an ACE!");
+                else if (playerCard == 11)
+                    System.out.print("Your card is a JACK!");
+                else if (playerCard == 12)
+                    System.out.print("Your card is a QUEEN!");
+                else if (playerCard == 13)
+                    System.out.print("Your card is a KING!");
+                else
+                    System.out.println("\n" + "Your card is a " + playerCard + "!");
+            */
+
+            //don't do any of this if it is the dealer's turn
+            if (input != 2) {
+
+
+
+                //IF ITS NOT TWO BUT WHEN IT IS OUT OF RANGE IT IS ALSO NOT TWO
+
+
+
+                playerCard = rng.nextInt(13) + 1;
+
+                //to print a string from the random number
+                switch (playerCard) {
+                    case 1:
+                        System.out.println("\n" + "Your card is an ACE!");
+                        break;
+                    case 11:
+                        System.out.println("\n" + "Your card is a JACK!");
+                        break;
+                    case 12:
+                        System.out.println("\n" + "Your card is a QUEEN!");
+                        break;
+                    case 13:
+                        System.out.println("\n" + "Your card is a KING!");
+                        break;
+                    default:
+                        System.out.println("\n" + "Your card is a " + playerCard + "!");
+                        break;
+                }
+
+                //so face cards are only 10
+                if (playerCard > 10) {
+                    playerCard = 10;
+                }
+
+                playerHand = playerHand + playerCard;
+                System.out.println("Your hand is: " + playerHand);
+
+                if (playerHand == 21) {
+                    playerWin = playerWin + 1;
+                    totalGames = totalGames + 1;
+                    gameNumber = gameNumber + 1;
+                    playerHand = 0;  //so once the player wins they start with nothing again
+                    restart = true;  //to make this do while restart
+                    System.out.println("\n" + "BLACKJACK! You win!");
+                    System.out.println("\n" + "START GAME #" + gameNumber);
+                    continue;        //to stop everything else from going, go to while
+                }
+
+                //player automatically loses, dealer automatically wins
+                else if (playerHand > 21) {
+                    playerLose = playerLose + 1;
+                    dealerWin = dealerWin + 1;
+                    totalGames = totalGames + 1;
+                    gameNumber = gameNumber + 1;
+                    playerHand = 0;
+                    restart = true;
+                    System.out.println("\n" + "You exceeded 21! You lose.");
+                    System.out.println("\n" + "START GAME #" + gameNumber);
+                    continue;
+                }
+            }
+
+            //menu
+            do {
+                System.out.println("\n" + "1. Get another card");
+                System.out.println("2. Hold hand");
+                System.out.println("3. Print game statistics");
+                System.out.println("4. Exit");
+                System.out.print("\n" + "Choose an option: ");
+                input = decision.nextInt();
+
+                if (input == 3) {
+                    System.out.println("Showing stats");
+
+                    //Do stats, can get stats before playing a game but NaN because divide by 0
+                    double percentagePlayerWin;
+
+                    //make it a double because it didn't work without one being a double
+                    percentagePlayerWin = 100 * (playerWin / (double) totalGames);
+
+                    System.out.println("\n" + "Number of Player wins: " + playerWin);
+                    System.out.println("Number of Dealer wins: " + dealerWin);
+                    System.out.println("Number of tie games: " + tieGame);
+                    System.out.println("Total # of games played is: " + totalGames);
+                    System.out.println("Percentage of Player wins: " + percentagePlayerWin + "%");
+
+                }
+
+                //if user inputs not 1 to 4
+                else if ((input < 1) || (input > 4)) {
+                    System.out.println("\n" + "Invalid input!");
+                    System.out.println("Please enter an integer value between 1 and 4.");
+                }
+
+            //so the do while will repeat
+            } while ((input == 3) || (input < 1) || (input > 4));
+
+            //dealer draws one card only between 16 and 26
+            if (input == 2) {
+                dealerHand = rng.nextInt(11) + 16;
+                System.out.println("\n" + "Dealer's hand: " + dealerHand);
+                System.out.println("Your hand is : " + playerHand);
+
+                if (dealerHand > 21) {
+                    playerWin = playerWin + 1;
+                    playerHand = 0;
+                    totalGames = totalGames + 1;
+                    gameNumber = gameNumber + 1;
+                    restart = true;
+                    input = 1;
+                    System.out.println("\n" + "You win!");
+                    System.out.println("\n" + "START GAME #" + gameNumber);
+                    continue;
+                }
+
+                else if (dealerHand == playerHand) {
+                    tieGame = tieGame + 1;
+                    totalGames = totalGames + 1;
+                    gameNumber = gameNumber + 1;
+                    playerHand = 0;
+                    restart = true;
+                    input = 1;
+                    System.out.println("\n" + "It's a tie! No one wins!");
+                    System.out.println("\n" + "START GAME #" + gameNumber);
+                    continue;
+                }
+
+                else if (dealerHand > playerHand) {
+                    dealerWin = dealerWin + 1;
+                    totalGames = totalGames + 1;
+                    gameNumber = gameNumber + 1;
+                    playerHand = 0;
+                    restart = true;
+                    input = 1;
+                    System.out.println("\n" + "You lose!");
+                    System.out.println("\n" + "START GAME #" + gameNumber);
+                    continue;
+                }
+
+                else if (dealerHand < playerHand) {
+                    playerWin = playerWin + 1;
+                    totalGames = totalGames + 1;
+                    gameNumber = gameNumber + 1;
+                    playerHand = 0;
+                    restart = true;
+                    input = 1;  //should this be here
+                    System.out.println("\n" + "You win!");
+                    System.out.println("\n" + "START GAME #" + gameNumber);
+                    continue;  //and would it still work with break
+                }
+            }
+
+        } while (input == 1 || input == 2 || (restart == true));
+    }
+}
+
+public class P1Random {
+    private long next;
+
+    public P1Random() {
+        next = 0;
+    }
+
+    private short nextShort() {
+        return nextShort(Short.MAX_VALUE);
+    }
+
+    private short nextShort(short limit) {
+        next = next * 1103515245 + 12345;
+        return (short) Math.abs(((next / 65536) % limit));
+    }
+
+    private int nextInt() {
+        return nextInt(Integer.MAX_VALUE);
+    }
+
+    public int nextInt(int limit) {
+        return ((((int) nextShort()) << 16) | ((int) nextShort())) % limit;
+    }
+
+    private double nextDouble() {
+        return (double) nextInt() / (double) Integer.MAX_VALUE;
+    }
+}
+
