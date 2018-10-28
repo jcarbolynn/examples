@@ -1,0 +1,108 @@
+#lab 6 practice
+
+#general linear model
+#incorporates categorical and continuous data
+
+##CHANGE
+setwd("~/semester 5/WIS 4601/wk6/lab6 parametric tests and linear models")
+kestrels = read.table("kestrels_states (1).txt", header=TRUE)
+
+windows()
+plot(Beak~Mass, data = kestrels, xlab = "Mass (g)", ylab = "Beak (mm)")
+
+m1 = lm(Beak~Mass, data = kestrels)
+#H0: no relationship
+#Ha: there is a linear relationship
+#p val: 2e-16
+#significant relationship between beak size and body weight
+
+summary(m1)
+#intercept: 9.9838
+#slope = 0.2153
+#both are significant, p val = 2e-16
+
+x = coef(m1)
+wbintercept = x[1]
+wbslope = x[2]
+
+jpeg("beak mass.jpeg")
+plot(Beak~Mass, data = kestrels, xlab = "Mass (g)", ylab = "Beak Length (mm)", main = "Kestrel Beak Length by Mass")
+abline(wbintercept, wbslope, col='red')
+dev.off()
+
+#lab 6
+
+setwd("~/semester 5/WIS 4601/wk6/lab6 parametric tests and linear models")
+
+mammal = read.csv("DEE.csv", header = T)
+summary(mammal)
+View(mammal)
+
+plot(DEE~weight, mammal)
+
+qqnorm(mammal$weight)
+qqnorm(mammal$DEE)
+#data is continuous
+
+#check if residuals are normally distributed
+
+hist(wresid)
+hist(dresid)
+#looks normal, but lets check
+
+#get means
+wmean = mean(mammal$weight)
+dmean = mean(mammal$DEE)
+
+#get residuals
+wresid = mammal$weight - wmean
+dresid = mammal$DEE - dmean
+
+
+shapiro.test(wresid)
+shapiro.test((mammal$weight))
+#H0: data is not different normal distribution
+#Ha: data is not normally distributed
+#p val: 0.9349
+#cannot reject null
+
+shapiro.test(dresid)
+shapiro.test(mammal$DEE)
+#H0: data is not different normal distribution
+#Ha: data is not normally distributed
+#p val: 0.586
+#cannot reject null
+
+######################
+#why do you have to check residuals if is is the same as the data
+#does it matter if one (x or y) was not normal?
+#what would that mean
+######################
+
+#dont need goodness of fit
+#library(vcd)
+#goodness of fit
+#gflm = goodfit(mammal$weight, type = "linear model")
+
+#linear model
+m = lm(DEE~weight, data = mammal)
+summary(m)
+
+#slope = 9.684, p val = 2e-16 so 
+#intercept = 263.148
+
+#intercept and slope from linear modeal
+x = coef(m)
+intercept = x[1]
+slope = x[2]
+#slope = 9.684
+#intercept = 263.148
+
+#make the line on the plot
+jpeg("DEE weight.jpeg")
+plot(DEE~weight, mammal,
+     main = "Tropical Mammal Weights vs Daily Energy Expenditure",
+     xlab = "Mass",
+     ylab = "DEE")
+abline(intercept, slope, col = "red")
+dev.off()
