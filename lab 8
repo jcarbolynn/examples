@@ -1,0 +1,294 @@
+#lab 8 density estimation
+
+#abundance estimation immportant for conservation
+
+setwd("~/semester 5/WIS 4601/wk8/Lab 8 distance")
+oyster = read.table("Oysterdata.txt", header = T)
+View(oyster)
+
+#add data on transect, in meters
+tr.length = 12
+tr.numbers = 5
+tr.width = 0.25
+total.area.km = 1.37   #km^2
+
+total.tr.length = tr.length * tr.numbers #60 m
+tr.area = tr.length * tr.width           #3 km^2
+#convert total area to meters
+total.area.m = total.area.km * 1000 * 1000 #x1000000 becacuse m^2
+a = 0.5 * tr.width
+#is this because the width was the total width but we only want the width of one side of the transect
+#to put it into the equation that multiplies it by 2 to get the full width?? weird
+
+#calculate live pre spill oysters of all transects
+#[data,] rows and all data in each row
+n.pre.live = nrow(oyster[which(oyster$Time == "Pre" & oyster$Oyster == "Live"),])
+n.post.live = nrow(oyster[which(oyster$Time == "Post" & oyster$Oyster == "Live"),])
+n.pre.dead = nrow(oyster[which(oyster$Time == "Pre" & oyster$Oyster == "Dead"),])
+n.post.dead = nrow(oyster[which(oyster$Time == "Post" & oyster$Oyster == "Dead"),])
+
+#pre live number = 392
+#post live number = 231
+#pre dead number = 90
+#post dead number = 225
+
+#D = n / (2aL)
+#density estimate
+
+d.pre.live = n.pre.live / (2 * a * total.tr.length)
+d.post.live = n.post.live / (2 * a * total.tr.length)
+d.pre.dead = n.pre.dead / (2 * a * total.tr.length)
+d.post.dead = n.post.dead / (2 * a * total.tr.length)
+
+#pre live density = 26.13
+#post live density = 15.4
+#pre dead density = 6
+#post dead density = 15
+
+d.pre.live * total.area.m
+#35802667
+d.post.live * total.area.m
+#21098000
+d.pre.dead * total.area.m
+#8220000
+d.post.dead * total.area.m
+#20550000
+
+##############################################################
+#testing differencecs in count data
+#x^2, chi squared
+#difference between observed and expected
+
+#make a table of the data
+oyster.table = table(oyster$Oyster, oyster$Time)
+oyster.table
+#if we can do that why did we do that n.pre.live nonsense......
+
+chisq.test(oyster.table)
+#H0: counts observed are independent of oil spill
+#   (before and after data would be the same)
+#x2 = 97.449
+#p val = 2.2e-16, reject null
+#there is a difference between pre and post
+
+#look at the expected values
+exp.oyster.table = chisq.test(oyster$Oyster, oyster$Time)$expected
+#chi squared compares this table to oyster.table (observed data)
+exp.oyster.table
+oyster.table
+
+#look at how different observed is from expected (residuals)
+chisq.test(oyster$Oyster, oyster$Time)$stdres
+#negative numbers if observed value is less than expected
+
+#x2 = 97.447
+#p val = 2.2e-16 so reject H0 that observed = expected
+#expected being no change from oil spill
+#oil spill did have an effect on oyster counts
+
+#histograms of sizes of live oysters pre vs post spill
+live.pre = oyster[which(oyster$Oyster == "Live" & oyster$Time == "Pre"),]
+live.post = oyster[which(oyster$Oyster == "Live" & oyster$Time == "Post"),]
+
+windows()
+jpeg("live pre vs post.jpeg")
+par(mfrow = c(1,2))
+hist(live.pre$Size, xlim = c(30, 100), ylim = c(0, 110),
+     main = "Before Spill",
+     xlab = expression(paste("Size cm" ^"2")))
+hist(live.post$Size, xlim = c(30, 100), ylim = c(0, 110),
+     main = "After Spill",
+     xlab = expression(paste("Size cm" ^"2")))
+dev.off()
+
+mean(live.pre$Size)
+mean(live.post$Size)
+#pre live mean = 57.056
+#post live mean = 49.62
+
+#make barplot
+#alive pre and post
+#dead pre and post
+#pre alive and dead
+#post alive and dead
+
+#use estimated abundances
+
+#beside = T
+
+alive = oyster[which(oyster$Oyster == "Live"),]
+dead = oyster[which(oyster$Oyster == "Dead"),]
+
+#data frame
+abundance.data = data.frame(abundance = c(35802667, 21098000, 8220000, 20550000),
+                            time = c("pre", "post", "pre", "post"),
+                            condition = c("alive", "alive", "dead", "dead"))
+#names(abundance.data)[1] = "abundance"
+#(needed bc before didnt have "abundance = ")
+
+alive.abun = abundance.data[which(abundance.data$condition == "alive"),]
+dead.abun = abundance.data[which(abundance.data$condition == "dead"),]
+
+par(mfrow = c(1,1))
+#alive.bp = barplot(abundance.data$abundance,
+#                   names.arg = c("pre", "post", "pre", "post"),
+#                   beside = T)
+#x label for each half?
+
+jpeg("before and after abundance.jpeg")
+par(mfrow = c(1, 2))
+alive.bp = barplot(alive.abun[,1],
+                   ylim = c(0, 32000000),
+                   xlab = "Alive",
+                   ylab = "Abundance",
+                   font.lab = 4,
+                   col = c("light blue", "papayawhip"))
+axis(1, at = alive.bp, labels = c("Before", "After"))
+
+dead.bp = barplot(dead.abun[,1],
+                  ylim = c(0, 32000000),
+                  xlab = "Dead",
+                  ylab = "Abundance",
+                  font.lab = 4,
+                  col = c("light blue", "papayawhip"))
+axis(1, at = alive.bp, labels = c("Before", "After"))
+dev.off()
+
+before.abun = abundance.data[which(abundance.data$time == "pre"),]
+after.abun = abundance.data[which(abundance.data$time == "post"),]
+
+jpeg("before and after abundance.jpeg")
+par(mfrow = c(1, 2))
+before.bp = barplot(before.abun[,1],
+                   ylim = c(0, 32000000),
+                   xlab = "Before",
+                   ylab = "Abundance",
+                   font.lab = 4,
+                   col = c("light blue", "papayawhip"))
+axis(1, at = before.bp, labels = c("Alive", "Dead"))
+
+after.bp = barplot(after.abun[,1],
+                  ylim = c(0, 32000000),
+                  xlab = "After",
+                  ylab = "Abundance",
+                  font.lab = 4,
+                  col = c("light blue", "papayawhip"))
+axis(1, at = after.bp, labels = c("Alive", "Dead"))
+dev.off()
+
+#how do you have barplots with bars side by side for comparison
+
+#######################################################3
+#line transect: distance sampling p < 1
+
+install.packages("Rdistance",dependencies=TRUE, repos = "http://cran.us.r-project.org")
+library("Rdistance")
+
+transsp = read.csv("sparrow.transects.csv", header = T, sep = ",")
+head(transsp)
+detsp = read.csv("sparrow.detections.csv", header = T, sep = ",")
+head(detsp)
+
+par(mfrow = c(1,1))
+hist(detsp$dist, col = "grey",
+     main = "",
+     xlab = "distance (m)",
+     xlim = c(0, 250),
+     ylim = c(0, 150))
+#shows that we detect more sparrows closer to transect
+
+#now need to fit detection function
+#half normal, uniform, hazard rate, negative exponential
+#can also sepcify maximum distance from transect
+
+
+jpeg("distance distributions.jpeg")
+
+par(mfrow = c(2, 2))
+
+#half normal
+detfun.hn = dfuncEstim(formula = dist ~ 1,
+                       detectionData = detsp,
+                       likelihood = "halfnorm",
+                       w.hi = 150)
+plot(detfun.hn,
+     main = "Half Normal")
+detfun.hn
+#AIC = 3263.443
+
+#uniform
+detfun.un = dfuncEstim(formula = dist ~ 1,
+                       detectionData = detsp,
+                       likelihood = "uniform",
+                       w.hi = 150)
+plot(detfun.un,
+     main = "Uniform")
+detfun.un
+#AIC = 3260.732
+
+#hazard
+detfun.hr = dfuncEstim(formula = dist ~ 1,
+                       detectionData = detsp,
+                       likelihood = "hazrate",
+                       w.hi = 150)
+plot(detfun.hr,
+     main = "Hazard")
+detfun.hr
+#AIC = 3267.625
+
+#negative exponential
+detfun.ne = dfuncEstim(formula = dist ~ 1,
+                       detectionData = detsp,
+                       likelihood = "negexp",
+                       w.hi = 150)
+plot(detfun.ne,
+     main = "Negative Exponential")
+detfun.ne
+#AIC = 3263.815
+
+dev.off()
+
+################################################
+#put AIC values in table
+aic = NULL
+#put in aic values
+aic[1] = AIC(detfun.hn)
+aic[2] = AIC(detfun.un)
+aic[3] = AIC(detfun.hr)
+aic[4] = AIC(detfun.ne)
+
+View(aic)
+
+#change in aic
+daic = aic - min(aic)
+delta = data.frame(aic, daic)
+delta
+
+
+#no
+#ordered = seq(min(delta$aic), max(delta$aic), length = 4)
+#ordered
+
+
+###################################################################
+#estimate abundance
+
+fit = abundEstim(detfun.un, detectionData = detsp,
+                 siteData = transsp, area = 10000,
+                 R = 500, ci = 0.95,
+                 plot.bs = T, bySite = F)
+#full output
+fit
+
+#number of sparrows per m2
+fit$n.hat
+
+#confidence intervals
+fit$ci
+
+#distance function: uniform
+#abundance estimate: 1.003543
+#interval
+#lower: 0.7847243
+#upper: 1.328917
+
