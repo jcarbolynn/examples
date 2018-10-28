@@ -1,0 +1,138 @@
+#LAB 4
+
+setwd("~/semester 5/WIS 4601/wk4/lab 4")
+library("vcd")
+birds = read.table("lab4_data.txt", header = T)
+#MASS package
+
+View(birds$GRHE)
+
+#1: LBHE continuous or discrete
+qqnorm(birds$GRHE, main = "GRHE")
+#discrete
+
+#2: 2 potential distributions?
+#negative binomial (var >= mean) or poisson (mean = var)
+#data discrete so could be poisson
+#data right skewed so could be neg binom
+
+#3: fit both distributions, estimate parameters
+
+#parameters for neg binom
+grhe.fit.negbin = fitdistr(birds$GRHE, "negative binomial")$estimate
+grhe.fit.negbin
+#size: 3.04
+#mu: 2.17
+
+#parameter for poisson
+grhe.fit.pois = fitdistr(birds$GRHE, "poisson")$estimate
+grhe.fit.pois
+#lambda: 2.17
+
+
+#4: goodness of fit for each distribution
+#fit for neg binom
+GRHE.gfnb = goodfit(birds$GRHE, type = "nbinomial", method = "MinChisq")
+summary(GRHE.gfnb)
+#binomial distribution
+#Ha: GRHE does not follow the nbinomial distribution
+#H0: GRHE does follow the distribution
+#x2: 4.62
+#p: 0.59
+
+#fit for poisson
+GRHE.gfp = goodfit(birds$GRHE, type = "poisson", method = "MinChisq")
+summary(GRHE.gfp)
+#Ha: GRHE does not follow the poisson distribution
+#H0: GRHE does follow the distribution
+#x2: 32.42
+#p: 3.39e-05
+
+#5: which distribution is more appropriate
+#use inforation from graphs and goodness of fit tests
+
+#need 3 lines of reasoning!!
+mean(birds$GRHE)  #2.17
+sd(birds$GRHE)    #1.92
+
+grhe.fit.negbin
+var.negbin = 3.04/(3.04 + 2.17)
+#lets var be greater than mean
+#but variance is much smaller than mean
+#but it is skewed to the right, so there should be lots of dispersion
+
+
+
+############################################
+#the standard deviation is greater than the mean
+#for poisson to be better they would need to be about the same
+
+#Negative binomial distribution fit the GRHE data best.
+#The p value for the nb test was statistically significant while
+#the test for poisson distribution was not.
+#
+
+#AIC
+fit_bn = fitdistr(birds$GRHE, "negative binomial")
+AIC(fit_bn)
+#385.87
+fit_p = fitdistr(birds$GRHE, "poisson")
+AIC(fit_p)
+#399.31
+
+#Using AIC data, the negative binomial was still most appropriate
+
+windows()
+par(mfrow = c(1,2))
+jpeg("grhe_binom.jpeg")
+#histogram with best fit line from distribution of choice
+hist(birds$GRHE,
+     xlab = "GRHE count",
+     breaks = c(-1:8),
+     xlim = c(-1,8),
+     main = "GRHE Counts Fitted with Negative Binomial Distribution",
+     probability = F)
+#to get size and mu
+grhe.fit.negbin
+#set size (dispersion parameter) of lbhe nb
+grhe.size.nb = 3.04
+#probability of lbhe nb
+grhe.prob.nb = 3.04/(3.04 + 2.17)
+grhe.values = seq(0, max(birds$GRHE))
+#predicted counts lbhe with neg binom distr
+fitted.grhe.nb = 100*dnbinom(grhe.values, grhe.size.nb,
+                          grhe.prob.nb)
+lines(fitted.grhe.nb~grhe.values, col = "red")
+dev.off()
+
+#do with poisson to compare
+hist(birds$GRHE,
+     xlab = "GRHE count",
+     breaks = c(-1:8),
+     xlim = c(-1,8),
+     main = "Poisson",
+     probability = F)
+grhe.fit.pois
+grhe.lambda = 2.17
+#predicted counts of grhe with poisson distr
+fitted.grhe.p = 100*dpois(grhe.values, grhe.lambda)
+lines(fitted.grhe.p~grhe.values, col = "red")
+
+
+#do on same histogram
+windows()
+jpeg("GRHE nb and poisson.jpeg")
+hist(birds$GRHE,
+     xlab = "GRHE count",
+     breaks = c(-1:8),
+     xlim = c(-1,8),
+     main = "Neg Binom vs Poisson",
+     probability = F)
+
+lines(fitted.grhe.nb~grhe.values, col = "red")
+lines(fitted.grhe.p~grhe.values, col = "blue")
+
+legend("right", legend = c("Negative Binomial", "Poisson"),
+       pch = 20,
+       col = c("red", "blue"))
+dev.off()
