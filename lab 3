@@ -1,0 +1,217 @@
+#lab 3 data management
+
+rm(list = ls())
+
+setwd("~/semester 5/WIS 4601/wk3/lab3")
+ChaData = read.table("CHA_fish_data_assignment.txt", header = T)
+
+#look at data
+str(ChaData)
+
+#look at species
+View(ChaData$species)
+unique(ChaData$species)
+
+#ah here, find counts of species
+counts = aggregate(x = list(count = ChaData$tl), by = list(spec = ChaData$species), FUN = length)
+#HOGH looks suspicious
+
+ChaData[which(ChaData$species == "HOGH"),]
+#row 1935 has the HOGH
+
+#look at row 1935
+ChaData[1932:1938,]
+ChaData[1932:1938,11:12]
+#didnt show anything really
+#not surrounded by the thing that it could be a typo of
+
+#look at the HOG and HOGH
+ChaData[which(ChaData$species == "HOG" |
+                ChaData$species == "HOGH"), 11:12]
+
+#make histogram
+HOGH_hist = ChaData[which(ChaData$species == "HOG" |
+                            ChaData$species == "HOGH"),]
+windows()
+hist(HOGH_hist$tl, breaks = 30,
+     col = "lightblue")
+    #cant do this? :
+    #col[which(ChaData$species == "HOGH")] <- "red"
+    #object of type 'closure' is not subsettable
+#90 is within the range of the histogram
+#so HOGH probably supposed to be HOG?
+
+#delete HOGH from ChaData2
+ChaData2 = ChaData[c(1:1934, 1936:2001),]
+#didnt work with ChaData[-c(1935)] ?
+dim(ChaData2)
+dim(ChaData)
+
+str(ChaData2)
+View(ChaData2)
+#just removed 1935, so goes 1934 to 1936
+###########################################
+#is this an issue?
+###########################################
+rownames(ChaData2) = NULL
+#now goes 1-2000
+
+#make histograms for each species, look for outliers
+unique(ChaData$species)
+
+windows()
+GRSN = ChaData[which(ChaData$species == "GRSN"),]
+hist(GRSN$tl, breaks = 30)
+#nice, first one, giant outlier
+#but still check rest:
+
+HOG = ChaData[which(ChaData$species == "HOG"),] 
+hist(HOG$tl, breaks = 30)
+
+LACH = ChaData[which(ChaData$species == "LACH"),]
+hist(LACH$tl, breaks = 30)
+
+LMB = ChaData[which(ChaData$species == "LMB"),]
+hist(LMB$tl, breaks = 30)
+
+SHEE = ChaData[which(ChaData$species == "SHEE"),]
+hist(SHEE$tl, breaks = 30)
+
+SPSU = ChaData[which(ChaData$species == "SPSU"),]
+hist(SPSU$tl, breaks = 30)
+
+TIMO = ChaData[which(ChaData$species == "TIMO"),]
+hist(TIMO$tl, breaks = 30)
+
+AMEE = ChaData[which(ChaData$species == "AMEE"),]
+hist(AMEE$tl, breaks = 30)
+
+PIN = ChaData[which(ChaData$species == "PIN"),]
+hist(PIN$tl, breaks = 30)
+
+STMU = ChaData[which(ChaData$species == "STMU"),]
+hist(STMU$tl, breaks = 30)
+#rest look good just go back to GRSN
+
+#show the thing that is over 600 tl
+ChaData[which(ChaData$species == "GRSN" &
+                ChaData$tl > 600), 11:12]
+#the GRSN outlier is row 701
+
+#look at it in the list
+#is surrounded by others of same species
+#suspciously high
+ChaData[698:705, 11:12]
+
+#remove 701 from ChaData2
+#wow i just thought about how i shifted the rows
+#good thing this is before that lol
+#wait but also since i removed it in chadata2 chadata is still the same
+#wait but I do want the other thing I deleted to still be gone
+ChaData2 = ChaData2[c(1:700, 702:2000),]
+#think that worked, probably couldve waited to do any deleting until after I had foundboth errors
+
+View(ChaData2)
+
+#now redo rows
+rownames(ChaData2) = NULL
+
+####################################
+#rerun, DO NOT do deleting of rows until now
+#temp = ChaData[-c(1935, 701)]
+#dim(temp)
+####################################
+
+#2
+#mean GRSN
+mean(ChaData2$tl[ChaData2$species == "GRSN"])
+
+#3
+#install packages
+install.packages("dplyr",repos = "http://cran.us.r-project.org")
+install.packages("tidyr",repos = "http://cran.us.r-project.org") 
+#if that doesnt work go to packages and find them
+
+#group data by ID
+group_Cha2 = group_by(.data = ChaData2, sampid, species)
+sum_counts = summarize(group_Cha2, total.count = n())
+View(sum_counts)
+
+#wide format
+sp_samp = spread(sum_counts,
+                 key = species,
+                 value = total.count)
+View(sp_samp)
+
+#change N/A to 0
+sp_samp[is.na(sp_samp)] = 0
+head(sp_samp)
+
+#GRSN in row 1
+sp_samp[1,]      #40
+
+#SHEE in row 7
+sp_samp[7,]      #3
+
+#HOG in row 10
+sp_samp[10,]     #0
+
+#4
+#covariate data because sp_samp only has species counts
+covar = ChaData2[,1:10]  #everything except species and tl
+#only unique things
+covar_samp = unique(covar)
+
+#merge data set ChaData2 and covariant data
+samp_data = merge(x = covar_samp,
+                  y = sp_samp,
+                  by.x = "sampid",
+                  by.y = "sampid",
+                  sort = F)
+#mean and sd number of HOG by reach
+HOG_mean = aggregate(x = list(mean = samp_data$HOG),
+                     by = list(reach = samp_data$reach),
+                     FUN = mean)
+HOG_sd = aggregate(x = list(sd = samp_data$HOG),
+                   by = list(reach = samp_data$reach),
+                   FUN = sd)
+
+#5
+PIN_mean = aggregate(x = list(mean = samp_data$PIN),
+                     by = list(reach = samp_data$reach),
+                     FUN = mean)
+#a: false
+GRSN_mean = aggregate(x = list(mean = samp_data$GRSN),
+                     by = list(month = samp_data$month),
+                     FUN = mean)
+#b: false
+
+#6
+#find standard deviation
+GRSN_sd = aggregate(x = list(sd = samp_data$GRSN),
+                    by = list(month = samp_data$month),
+                    FUN = sd)
+
+#use stdv to find error bars
+upper_sd = GRSN_mean[,2] + GRSN_sd[,2]
+lower_sd = GRSN_mean[,2] - GRSN_sd[,2]
+
+jpeg("GRSN.jpeg")
+#make a bar plot
+bp = barplot(GRSN_mean[,2],
+             ylim = c(0, max(upper_sd)),
+             ylab = "GRSN catch per sample",
+             xlab = "Month",
+             main = "Average Gray Snapper Caught Per Month")
+#add months
+axis(side = 1,
+     at = bp,
+     labels = c("Febuary", "March", "April", "May", "June"))
+     
+#to add error bars
+arrows(bp, lower_sd, bp, upper_sd,
+       code = 3,
+       angle = 90,
+       length = 0.125)
+#zero length arrow, check sd, I had so upper and lower stdv were the same
+dev.off()
