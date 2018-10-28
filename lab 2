@@ -1,0 +1,147 @@
+#lab assignment 2
+
+setwd("~/semester 5/WIS 4601/wk2/lab 2")
+birds <- read.csv("birds.csv", header = TRUE)
+
+
+#1 histograms of COGA
+#here finding max in each fo, ag, ur
+max(birds$COGA[birds$SECTION == "FO"])
+max(birds$COGA[birds$SECTION == "AG"])
+max(birds$COGA[birds$SECTION == "UR"])
+
+#to change the format
+par(mfrow = c(1,3))
+#histograms for COGA species divided by habitat (FO, AG, UR)
+hist(birds$COGA[birds$SECTION == "FO"], 
+     xlab = expression("Bird Counts"),
+     ylab = expression("Frequency"),
+     main = "COGA_Forest",
+     breaks = c(-1:7),
+     xlim = c(-1,10),
+     ylim = c(0,10)
+)
+hist(birds$COGA[birds$SECTION == "AG"], 
+     xlab = expression("Bird Counts"),
+     ylab = expression("Frequency"),
+     main = "COGA_Agriculture",
+     breaks = c(-1:6),
+     xlim = c(-1,10),
+     ylim = c(0,10)
+)
+hist(birds$COGA[birds$SECTION == "UR"], 
+     xlab = expression("Bird Counts"),
+     ylab = expression("Frequency"),
+     main = "COGA_Urban",
+     breaks = (-1:9),
+     xlim = c(-1,10),
+     ylim = c(0,10)
+)
+
+windows()
+
+
+#2 calculate mean and stdv of counts of each bird species by habitat type
+MeanFO = mean(birds$COGA[birds$SECTION == "FO"])
+MeanAG = mean(birds$COGA[birds$SECTION == "AG"])
+MeanUR = mean(birds$COGA[birds$SECTION == "UR"])
+
+SDFO = sd(birds$COGA[birds$SECTION == "FO"])
+SDAG = sd(birds$COGA[birds$SECTION == "AG"])
+SDUR = sd(birds$COGA[birds$SECTION == "UR"])
+
+mean(birds$AMRE[birds$SECTION == "FO"])
+mean(birds$AMRE[birds$SECTION == "AG"])
+mean(birds$AMRE[birds$SECTION == "UR"])
+
+sd(birds$AMRE[birds$SECTION == "FO"])
+sd(birds$AMRE[birds$SECTION == "AG"])
+sd(birds$AMRE[birds$SECTION == "UR"])
+
+mean(birds$LEFL[birds$SECTION == "FO"])
+mean(birds$LEFL[birds$SECTION == "AG"])
+mean(birds$LEFL[birds$SECTION == "UR"])
+
+sd(birds$LEFL[birds$SECTION == "FO"])
+sd(birds$LEFL[birds$SECTION == "AG"])
+sd(birds$LEFL[birds$SECTION == "UR"])
+
+#3: COGA has highest average count
+birds.avg <- sapply(birds[,7:9], MARGIN = 2, FUN = mean)
+##use 'apply' to get means of columns 7-9
+
+bp = barplot(birds.avg,
+             xlab = "Species",
+             ylab = "Average Count",
+             axes = FALSE,
+             ylim = c(0,5))
+#'bp' will  now make the barplots
+axis(2)
+
+sd1 = apply(birds[,7:9], 2, sd)
+
+nsamp = nrow(birds) #number of samples
+se1 = sd1/sqrt(nsamp) #standard errors
+
+upper_CI = birds.avg + 2 * se1
+lower_CI = birds.avg - 2 * se1
+
+bp<-barplot(birds.avg,
+            xlab="Species",
+            ylab="Average Count",
+            axes=FALSE,
+            ylim=c(0,5))
+axis(2)
+arrows(bp,
+       lower_CI,
+       bp,
+       upper_CI,
+       code=3,
+       angle=90,
+       length=0.125)
+
+
+#4: highest precision?
+#subtract upper_CI from lower_CI
+1.94-1.52
+3.22-2.5
+1.92-1.45
+
+#5
+#making a scatter plot
+jpeg("lab2q5.jpeg") #to export
+plot(
+  birds$EASTING, birds$NORTHING,
+  main = expression("Spatial Distribution"),
+  xlab = expression("Easting"),
+  ylab = expression("Northing"),
+  pch = 17,
+  col = c("red", "green", "blue")[birds$SECTION]
+)
+#to make a legend
+legend(
+  "bottomright",
+  legend = c("Forest", "Agriculture", "Urban"),
+  pch = 17,
+  col = c("red", "green", "blue")
+)
+dev.off()
+
+?pch
+
+
+#extra credit, same as previous graph but adding shapes
+windows()
+jpeg("lab2ec.jpeg")
+par(mfrow = c(1,1))
+plot(birds$EASTING, birds$NORTHING,
+     main = expression("Spatial Distribution"),
+     xlab = expression("Easting"),
+     ylab = expression("Northing"),
+     pch = c(16, 15, 17)[birds$SECTION],
+     col = c("blue", "orange", "black")[birds$SECTION])
+
+legend("bottomright", legend = c("Forest", "Ag", "Urban"),
+       pch = c(16, 15, 17),
+       col = c("blue", "orange", "black"))
+dev.off()
