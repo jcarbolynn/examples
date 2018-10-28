@@ -1,0 +1,223 @@
+#August 24, 2018
+#code for WIS4601 lab 1
+
+2+2
+log(10)
+log(16)
+exp(2.77)
+
+#did some calculator things
+#now creating variables
+
+x <- 8
+x+x
+x^x
+x^2
+x = 3
+x^x
+x^2
+
+#= is so much easier tho...
+
+rm x
+rm (x)
+x
+#nice
+
+#######################
+#careful with rm(list= ls()), will remove everything
+
+#named objects
+
+x = 6
+rm(x)
+
+#dog weight in kg
+dog_wt = 60
+#convert to g
+dog_wt*1000
+dog_wt=dog_wt*1000
+dog_wt
+#why didnt that work
+dog_wt_g = dog_wt*1000
+dog_wt_g
+
+x = 3
+x = (x+3)
+x
+##have to use parentheses?
+x=x+3
+x
+##wait maybe not, idk i just got 9
+
+x = 5
+x*2
+x
+##ok so didnt set x, good
+x = x*2
+x
+#it did multiply and change x
+
+#weights of rice rats in g
+weights = c(30, 29, 45, 82)
+#convert to kg
+weights/1000
+weights_kg = weights/1000
+weights_kg
+
+##########################
+#make it easy to read
+#8/24/18
+#programmer: Joelle
+##########################
+
+#data frames
+#useful to work with real data
+
+#squirrel weight data
+#from giant tree squirrel population in yellow lake
+
+#makes list of numbers 1-6
+id = 1:6
+id
+
+sex = c("f", "f", "m", "f", "m", "f")
+sex
+
+id(sex)
+##OK so id is a variable, a list of int
+##sex is a list of char
+
+bodymass = c(45, 58, 61, 47, 31, 57)
+#wait why do you need the c here, i thought these were int
+
+#combine 3 vectors into a dataframe
+squirrels<- data.frame(ID = id, Sex = sex, Bodymass = bodymass)
+
+squirrels #WOW its all there!
+view(squirrels)
+#needs to be capitalized
+View(squirrels)
+
+#y data are hard?
+
+#make dataframe with just mass of female squirrels
+squirrels$Bodymass
+female_sq = squirrels$Bodymass[squirrels$Sex=="f"]
+female_sq_fat = squirrels$Bodymass[squirrels$Sex == "f" & squirrels$Bodymass > 55]
+female_sq_fat
+
+## == a conditional, if true returns
+
+#returns female body weights within first 3 animals
+squirrels$Bodymass[squirrels$Sex == "f" & squirrels$ID <= 3]
+
+mean(squirrels$Bodymass[squirrels$Sex == "m"])
+sd(squirrels$Bodymass[squirrels$Sex == "f"])
+
+#################################
+# is.na() turns all "NA" values in dataframe or matrix
+# into whatever you need
+#################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##read in data file
+##set working directory
+  setwd("~/semester 5/WIS 4601/wk1")
+
+##save r script
+##text editor goood
+#open data in text editor
+
+#INCLUDE UNITS
+
+amphibians <- read.csv("Amphibians.csv", header = TRUE)
+head(amphibians) #first 6 rows
+
+#how many amphibians were measured
+total = length(amphibians$SVL)
+##############################################
+junk = length(amphibians)
+###why is that 3...what is it counting
+
+#1
+##to find how any snout to ent lengths there are of eah species (?)
+num_PO = length(amphibians$SVL[amphibians$Species == "ELPO"])
+num_CO = length(amphibians$SVL[amphibians$Species == "ELCO"])
+
+##to find the mean SVL of each species
+mean_PO = mean(amphibians$SVL[amphibians$Species == "ELPO"])
+mean_CO = mean(amphibians$SVL[amphibians$Species == "ELCO"])
+
+##to find standard deviation of SVL of each species
+sd_PO = sd(amphibians$SVL[amphibians$Species == "ELPO"])
+sd_CO = sd(amphibians$SVL[amphibians$Species == "ELCO"])
+
+#2
+##to find only SVL of amphibians that were sampled above 500 meters
+
+##make separate lists for species, trying to keep elevation and svl?
+##spoiler it didnt work
+    ##amph_PO = split(df, df$Species)
+    ##amph_CO = split()
+
+high_count_PO = length(amphibians$SVL[amphibians$Species == "ELPO" & 
+                                amphibians$Elevation > 500])
+high_count_CO = length(amphibians$SVL[amphibians$Species == "ELCO" & 
+                                amphibians$Elevation > 500])
+View(amphibians$SVL[amphibians$Species == "ELCO" & amphibians$Elevation > "500"])
+    ##high_amph_CO should be 23?
+    ##i looked through the ELCOs (amphibians and high_count_CO)
+    ##and the one missing is the elevation above 10000m
+
+#find mean of SLV for ea spp above 500m
+high_mean_PO = mean(amphibians$SVL[amphibians$Species == "ELPO" & 
+                                       amphibians$Elevation > 500])
+high_mean_CO = mean(amphibians$SVL[amphibians$Species == "ELCO" & 
+                                       amphibians$Elevation > 500 ])
+
+#stdv of SVL for ea spp above 500m
+high_sd_PO = sd(amphibians$SVL[amphibians$Species == "ELPO" & 
+                                       amphibians$Elevation > 500])
+high_sd_CO = sd(amphibians$SVL[amphibians$Species == "ELCO" & 
+                                       amphibians$Elevation > 500])
+
+#3
+#multiply all elevations by 1.14
+high_mean_PO = mean(amphibians$SVL[amphibians$Species == "ELPO" & 
+                                     amphibians$Elevation*1.14 > 500])
+high_mean_CO = mean(amphibians$SVL[amphibians$Species == "ELCO" & 
+                                     amphibians$Elevation*1.14 > 500])
+
+sd(amphibians$SVL[amphibians$Species == "ELPO" & 
+                      amphibians$Elevation*1.14 > 500])
+sd(amphibians$SVL[amphibians$Species == "ELCO" & 
+                      amphibians$Elevation*1.14 > 500])
+
+length(amphibians$SVL[amphibians$Species == "ELPO" & 
+                      amphibians$Elevation*1.14 > 500])
+length(amphibians$SVL[amphibians$Species == "ELCO" & 
+                      amphibians$Elevation*1.14 > 500])
+
+####################################################################
+#doesnt work??
+NewElevation = amphibians$SVL[amphibians$Elevation*1.14]
+
+NewElevationPO = (amphibians$SVL[amphibians$Species == "ELPO" & amphibians$Elevation * 1.14])
+mean(amphibians$SVL[amphibians$Species == "ELPO" & amphibians$NewElevationPO > 500])
