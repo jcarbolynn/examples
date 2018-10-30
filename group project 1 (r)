@@ -33,18 +33,6 @@ hist(non$blubber)
 hist(preg$blubber)
 #same thing, has almomst a second hump
 
-par(mfrow = c(1,3))
-hist(male$length)
-hist(non$length)
-hist(preg$length)
-
-hist(whale$length)
-
-par(mfrow = c(1,3))
-hist(male$prey)
-hist(non$prey)
-hist(preg$prey)
-
 #check with barplots
 boxplot(whale$blubber~whale$group)
 #no outliers
@@ -243,19 +231,7 @@ summary(bpgm)
 #prey:groupnon     3.444       0.6735    
 #prey:grouppreg    6.551       0.4232  
 
-######################################################################
-
-#tukey test
-#add multcomp
-interactive.tukey = glht(bpgm, mcp(group ='Tukey')) 
-summary(interactive.tukey)
-#are they all significantly different from each other too????????????????????????????
-#goddammit
-
-anova(bpgm)
-
-#########################################################################
-
+#########################################################
 #4b
 #regression lines
 
@@ -275,6 +251,7 @@ pmslope = gm[2] + gm[6]
 pmint = gm[1] + gm[4]
 abline(pmint, pmslope, col = "blue")
 
+#################################################################
 #4c
 
 #is prey density a useful predictor of blubber thickness?
@@ -286,6 +263,7 @@ abline(pmint, pmslope, col = "blue")
 #there is not a relationship between prey density and blubber,
 #the slopes are not signifiant in any of the groups
 
+######################################################################
 #bonus
 #linear model where blubber thickenss varies with group, body length, and prey density
 #prey density additive
@@ -293,5 +271,8 @@ abline(pmint, pmslope, col = "blue")
 
 bpglm = glm(blubber~group*length + prey, data = whale)
 summary(bpglm)
+
+#prey density does not have a significant effect on blubber thickness for non pregnant females of certain lengths
+#but is significant for males and pregnant females of certain lengths.
 
 
