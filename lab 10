@@ -1,0 +1,216 @@
+#lab 10: functions
+#lincohln peterson
+#n hat = (n1 * n2) / m2
+
+############################################
+#estiate abundancce with LP
+
+#captured and marked first time
+slider.n1 = 400
+#aptured second
+slider.n2 = 350
+#recaptures
+slider.m2 = 160
+
+(slider.n1 * slider.n2)/slider.m2
+
+#now do it with a function (more efficient)
+LP = function(n1, n2, m2) {
+  
+  N_hat_LP = (n1 * n2)/m2
+  return(N_hat_LP)
+  
+}
+
+LP(400, 350, 160)
+LP(slider.n1, slider.n2, slider.m2)
+
+##########################################
+#chapman
+
+chapman = function(n1, n2, m2) {
+  chap = ((n1 + 1) * (n2 + 1)) / (m2 + 1) - 1
+  return(chap)
+}
+
+chapman(400,400,400)
+chap.out = chapman(400,350,160)
+
+##########################################
+#chapman variance
+
+ch_var = function(n1, n2, m2){
+  
+  var = ((n1 + 1) * (n2 + 1) * (n1 - m2) * (n2 - m2)) / ((m2 + 1)^2 * (m2 + 2))
+  return (var)
+  
+}
+
+ch_var(400, 400, 400)
+chap.var = ch_var(400,350,160)
+
+###########################################
+#capture probability
+#simulations (easy to simulate thousands of days of work)
+
+p1 = 0.2 #probabililty of capture
+N = 400 #total population
+
+sim.n1 = rbinom(100, N, p1) #first day oc capture
+sim.n2 = rbinom(100, N, p1) #second day of capture
+mark.rate = sim.n1/N
+
+sim.m2 = rbinom(100, sim.n2, mark.rate)
+#'N' is sim.n2 because only concerned about how many marked animals there are on day 2 (sim.n2)
+#'#mark.rate is 'capture probability' because that is proportion of marked individuals now
+
+#now do a function
+LP.sim.out = LP(sim.n1, sim.n2, sim.m2) 
+
+#if small capture probability or small population
+#might get no recaptures
+#so want chapman modifications
+
+###########################################
+CI.est = function (N, v_N) {
+  
+  ub = N + (1.96 * sqrt(v_N))
+  lb = N - (1.96 * sqrt(v_N))
+  
+  ci = c(lb, ub)
+  return(ci)
+}
+
+CI_chap = CI.est(N = chap.out, v_N = chap.var)
+#796.6 to 949.9
+
+###############################################
+#simulate going out in the field 500 times
+
+#capture probability
+p1 = 0.1
+N = 500
+
+#simulate capture 1 and capture 2, first and second times going out
+simul1.n1 = rbinom(500, N, p1)
+simul1.n2 = rbinom(500, N, p1)
+
+#to get m2, marked rate, get proportion marked
+#then do probabiltiy of capture of those already marked, recapture
+mark.rate = simul1.n1/N
+simul1.m2 = rbinom(500, simul1.n2, mark.rate)
+
+#now LP function to estimate population
+LP.simul1.out = LP(simul1.n1, simul1.n2, simul1.m2)
+LP.simul1.out
+#simulated recapture 500 times
+#if no recaptures, get population of infinity
+
+LP.simul1.out[is.infinite(LP.simul1.out)] = NA
+
+#not get mean of 500 trials, excluding inf
+mean(LP.simul1.out, na.rm = T)
+#plot estimates
+hist(LP.simul1.out)
+
+#################################################
+LP = function(n1, n2, m2) {
+  
+  N_hat_LP = (n1 * n2)/m2
+  return(N_hat_LP)
+  
+}
+
+chapman = function(n1, n2, m2) {
+  chap = ((n1 + 1) * (n2 + 1)) / (m2 + 1) - 1
+  return(chap)
+}
+
+#(number simulations, pop, prob cap)
+simulx.n1 = rbinom(500, N, p1)
+simulx.n2 = rbinom(500, N, p1)
+
+#to get m2, proportion marked
+mark.rate = simulx.n1/N
+simulx.m2 = rbinom(500, simulx.n2, mark.rate)
+
+#simulations:
+
+#11111111111111111111111111111111111
+#set population and capture probability
+N1 = 50
+p1 = 0.1
+#simulate first trap day
+simul1.n1 = rbinom(500, N1, p1)
+#second trap day
+simul1.n2 = rbinom(500, N1, p1)
+#proportion marked
+mark.rate1 = simul1.n1/N1
+#simulate probability of recapture
+simul1.m2 = rbinom(500, simul1.n2, mark.rate1)
+
+#population estimate with LP
+LP1 = LP(simul1.n1, simul1.n2, simul1.m2)
+#ignore any simulations when no recapture
+LP1[is.infinite(LP1)] = NA
+#mean pop with LP
+mean(LP1, na.rm = T)
+#sd of pop with LP
+sd(LP1, na.rm = T)
+#population estimate with chapman adjustment
+CH1 = chapman(simul1.n1, simul1.n2, simul1.m2)
+#dont need to ignore inf because this ensures that doesnt happen
+#mean pop estimate with chapman
+mean(CH1)
+#sd of pop with champan
+sd(CH1)
+
+#22222222222222222222222222222222222222222
+N2 = 50
+p2 = 0.7
+simul2.n1 = rbinom(500, N2, p2)
+simul2.n2 = rbinom(500, N2, p2)
+mark.rate2 = simul2.n1/N2
+simul2.m2 = rbinom(500, simul2.n2, mark.rate2)
+
+LP2 = LP(simul2.n1, simul2.n2, simul2.m2)
+LP2[is.infinite(LP2)] = NA
+mean(LP2,na.rm = T)
+sd(LP2, na.rm = T)
+CH2 = chapman(simul2.n1, simul2.n2, simul2.m2)
+mean(CH2)
+sd(CH2)
+
+#33333333333333333333333333333333333333333
+N3 = 400
+p3 = 0.1
+simul3.n1 = rbinom(500, N3, p3)
+simul3.n2 = rbinom(500, N3, p3)
+mark.rate3 = simul3.n1/N3
+simul3.m2 = rbinom(500, simul3.n2, mark.rate3)
+
+LP3 = LP(simul3.n1, simul3.n2, simul3.m2)
+LP3[is.infinite(LP3)] = NA
+mean(LP3, na.rm = T)
+sd(LP3, na.rm = T)
+CH3 = chapman(simul3.n1, simul3.n2, simul3.m2)
+mean(CH3)
+sd(CH3)
+
+#444444444444444444444444444444444444444444444
+N4 = 400
+p4 = 0.7
+simul4.n1 = rbinom(500, N4, p4)
+simul4.n2 = rbinom(500, N4, p4)
+mark.rate4 = simul4.n1/N4
+simul4.m2 = rbinom(500, simul4.n2, mark.rate4)
+
+LP4 = LP(simul4.n1, simul4.n2, simul4.m2)
+LP4[is.infinite(LP4)] = NA
+mean(LP4, na.rm = T)
+sd(LP4, na.rm = T)
+CH4 = chapman(simul4.n1, simul4.n2, simul4.m2)
+mean(CH4)
+sd(CH4)
+
+
