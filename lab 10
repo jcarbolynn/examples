@@ -212,5 +212,3 @@ sd(LP4, na.rm = T)
 CH4 = chapman(simul4.n1, simul4.n2, simul4.m2)
 mean(CH4)
 sd(CH4)
-
-
