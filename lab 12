@@ -1,0 +1,231 @@
+#lab 12 CJS
+
+#model survival and probability of detection
+#phi (0) and p
+#could have either change
+
+#2 philosophies
+#hypothesis falsification
+#    (what we have done in class, ex: Ho: no difference between means, Ha: there is a difference)
+#     cannot say alternative is true, just that the null is false
+#multiple hypotheses comparisons
+#     chamberlain, instaed of having one at a time, test multiple
+#     H1 vs H2 vs H3 vs H4
+#     more efficient
+#     maybe 2 hypotheses explain it together
+#     back then didnt have a way to do this, now we have AIC
+#     AIC = fit and #parameters, most parsimonious
+#           (if lots of variables high predictive value, not generalizeable)
+
+#AIC: if different models are 10, 20, 60, 80; 10 is best
+#     if like 20, 21, 21, 21; none is the best
+
+#wicked lol
+install.packages("wiqid")
+library(wiqid)
+
+#alternative packages to use
+#library(RMark)
+#library(marked)
+
+#not needed for the tutorial
+#load("SnailKite_formatted.RData")
+
+#data comes with the package
+data(dippers)
+head(dippers)
+
+#no covariates
+#0(.), p(.)
+dippers.ch = dippers[1:7]
+survCJS(dippers.ch)
+#chance of surviving to next year is 0.5602
+#p = 0.9026
+#AIC 670.84
+
+#temporal variation of survival
+#0(time), p(.)
+survCJS(dippers.ch, phi ~ .time)
+#survival estimate for each year:
+#0.6258
+#0.4542
+#0.4784
+#0.6244
+#0.6079
+#0.5833
+#p = 0.9021
+#AIC 673.73
+#this model is worse than no covariates,
+#do not really need temporal variation in survival
+#confidence intervals for each year overlap, no statistical difference
+#PSYCH DONT NEED TO WORRY ABOUT CI JUST THE AIC
+
+
+#temporal variation of detection
+survCJS(dippers.ch, p ~ .time)
+#0 = 0.5531
+#detection estimate for each year:
+#0.7851
+#0.8905
+#0.8751
+#0.9083
+#0.9406
+#0.9639
+#AIC 678.48
+#still no covariates is best, dont need temporal variation in survival
+#confidence intervals between detection overlap too
+#JUST AIC
+
+
+####################################################
+#survival AND detection differ???
+survCJS(dippers.ch, p ~ .time, phi ~ .time)
+BsurvCJS(list(dipppers.ch, p ~ .time, phi ~ .time))
+survCJS(dippers.ch, p ~ 1, phi ~ .time)
+
+survCJS(dippers, p ~ .time, phi ~ .time)
+
+#is this it
+survCJS(dippers.ch, model = list(phi ~ .time, p ~ .time))
+####################################################
+
+
+#############################################
+#group variables
+
+mfsurv = survCJS(dippers.ch, phi ~ group, group = dippers$sex)
+#0(f) = 0.5507
+#0(m) = 0.5703
+#p = 0.9027
+#AIC 672.68
+
+survCJS(dippers.ch, p ~ group, group = dippers$sex)
+#0 = 0.5607
+#p(f) = 0.8801
+#p(m) = 0.9243
+#AIC 672.19
+
+#AIC values are closer than 2 apart
+#both are worse but very close to the null
+
+##############################################################
+#make graph of mean survivals of male and female
+
+#??????????????????????
+coef(mfsurv)
+#doesnt work, idk where thses numbers are coming from
+#wait its beause of logit
+results = data.frame(mfsurv$real)
+View(results)
+mean(results[1:6,1])
+#oh wait theyre all the same lol
+results[1:1,]
+results[7:7,]
+#dataframe of just male and female survival
+results = results[c(1,7),]
+View(results)
+#add another column (for sex)
+results['sex'] = c("female", "male")
+View(results)
+
+#the actual estimate doesnt show up unless i do geompoint size
+ggplot(results, aes(x = sex, y = est)) +
+  geom_errorbar(aes(ymax = uppCI, ymin = lowCI)) +
+  geom_point(size = 2) +
+  labs(x = "Sex", y = "Survival (Phi)")
+#dippers mean survival by sex
+
+#########################################################
+#quitter way, HA got it
+#just type it in
+mfdf = data.frame("sex" = c("male", "female"),
+                  "average phi" = c(0.5507, 0.5703),
+                  "lowerCI" = c(0.4825, 0.5001),
+                  "upperCI" = c(0.6172, 0.6377))
+#library(data.table)
+#mfdf = (setattr(mfdf, "row.names", c('male', 'female')))
+mfdf
+#ok for real there has to be a better way to do this right??
+
+library(ggplot2)
+ggplot(mfdf, aes(x = sex, y = average.phi))
+
+ggplot(mfdf, aes(x = sex, y = average.phi)) +
+  geom_errorbar(aes(ymin = lowerCI, ymax = upperCI)) 
+
+plot(mfdf$average.phi)
+
+bp = barplot(mfdf$average.phi,
+             main = "Average Survival",
+             xlab = "Sex",
+             ylab = "Probability of Survival",
+             ylim = c(0, .7))
+arrows(bp, mfdf$lowerCI, bp, mfdf$upperCI, code = 3,
+       angle = 90, length = 0.125)
+axis(side = 1, at = bp, labels = c("Male", "Female"))
+########################################################
+
+setwd("~/semester 5/WIS 4601/wk13/lab 12")
+
+
+load("SnailKite_formatted.RData")
+data(sk.df)
+head(sk.df)
+snail = sk.df[,1:10]
+head(snail)
+
+library(wiqid)
+
+#null model
+#0(.), p(.)
+survCJS(snail)
+#0 = 0.7186
+#p = 0.5814
+#aic 14723.2
+
+#survival changes with habitat
+#0(habitat), p(.)
+survCJS(snail, phi ~ group, group = sk.df$Habitat)
+#0 ag = 0.6932
+#0 np = 0.7407
+#p    = 0.5815
+#aic 14705.2
+#this model is better than the null
+
+#survival probability of each habitat in each year
+habgr = survCJS(snail, phi ~ group + .time, group = sk.df$Habitat)
+#aic 14497.86
+#this model is the best
+
+##AHHH MAKING GRAPHS (use ggplot)
+
+#make dataframe
+assign9_10 = data.frame(habgr$real)
+View(assign9_10)
+#add columns for year and habitat
+assign9_10['year'] = NA
+assign9_10['habitat'] = NA
+
+#set habitat types
+assign9_10$habitat[c(1:9, 19:27)] = 'AF'
+# , is and : is through
+assign9_10$habitat[c(10:18, 28:36)] = 'NP'
+
+#set year
+assign9_10$year = c()
+#nice if you put in one set then it just repetes it
+
+#oh wait dont care about detection
+phi = assign9_10[1:18,]
+p = assign9_10[19:36,]
+
+#make graph
+
+library(ggplot2)
+ggplot(phi, aes(x = year, y = est, col = habitat)) + 
+  geom_errorbar(aes(ymax = uppCI, ymin = lowCI)) + 
+  geom_point(size = 2) + 
+  labs(x = "Year", y = "Survival (Phi)") + 
+  scale_x_discrete(name = "Year", limits = c(1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
