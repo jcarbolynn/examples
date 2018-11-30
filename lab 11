@@ -1,0 +1,323 @@
+#lab 11
+#testing lincoln peterson and chapman of closed models
+#how violating assumptions biases estimates of N
+
+#LP assumptions:
+#closed population
+#equal catchability
+#no tags lost
+#capture doesnt affect catchability (same p through time)
+
+#n1 = number captured first
+#n2 = number captured second
+#m2 = number recaptured
+
+#n = N*p
+
+#Nhat = (N*p1) (N*p2) / N*p1*p2
+                    #m2 = p1*p2
+        #N * p1 = n1
+#what happens if between n1 and n2 some individuals die
+#if 70% die, only pulling from 30% of initial population
+#survival = 0.3
+#substitutte N*p1 on the bottom with Na
+      #Na = number of individuals available for recapture
+      #Na = N*p1*survival
+#Nhat = (N*p1) (N*survival *p2) / (Na) *p2
+
+
+source("lab 10 practice.R")
+#has to be same working directory
+
+chapman = function(n1, n2, m2) {
+  chap = ((n1 + 1) * (n2 + 1)) / (m2 + 1) - 1
+  return(chap)
+}
+
+ch_var = function(n1, n2, m2){
+  
+  var = ((n1 + 1) * (n2 + 1) * (n1 - m2) * (n2 - m2)) / ((m2 + 1)^2 * (m2 + 2))
+  return (var)
+  
+}
+
+CI.est = function (N, v_N) {
+  
+  ub = N + (1.96 * sqrt(v_N))
+  lb = N - (1.96 * sqrt(v_N))
+  
+  ci = c(lb, ub)
+  return(ci)
+}
+
+#########################################################
+#death
+
+
+#40% individuals detected in first census
+N = 1000
+p2 = 0.4
+surv.n1 = N * p2
+surv.n1
+
+#30% initial 1000 individuals survived to second census
+#number suriving is surv.n1 * 0.3
+survival = 0.3
+surv.na = surv.n1 * survival
+surv.na
+
+#number individuals in second census is 1000*0.4 detectability*0.3 survival
+surv.n2 = N * p2 * survival
+surv.n2
+
+#recaptures
+surv.m2 = surv.na * p2
+surv.m2
+
+N_0.3 = chapman(surv.n1, surv.n2, surv.m2)
+#989.22
+var_0.3 = ch_var(surv.n1, surv.n2, surv.m2)
+#2205.69
+CI.est(N_0.3, var_0.3)
+#905.7 - 1089.8
+
+#survival = 1
+N = 1000
+p2 = 0.4
+surv.n1 = N * p2
+surv.n1
+
+survival = 1
+surv.na = surv.n1 * survival
+surv.na
+
+surv.n2 = N * p2 * survival
+surv.n2
+
+surv.m2 = surv.na * p2
+surv.m2
+
+N_1 = chapman(surv.n1, surv.n2, surv.m2)
+#997.764
+var_1 = ch_var(surv.n1, surv.n2, surv.m2)
+#2205.7
+CI.est(N_1, var_1)
+#905.7 - 1089.8
+
+#when there are deaths, estimate is too low
+
+######################################################
+#birth
+
+#again, only detect 0.4
+birth = 27
+
+births.n1 = N * p2
+births.na = births.n1
+births.n2 = (N + birth) * p2
+births.m2 = births.na * p2
+
+N_births = chapman(births.n1, births.n2, births.m2)
+#1024.66
+var_births = ch_var(births.n1, births.n2, births.m2)
+#2367
+CI.est(N_births, var_births)
+#929.31 - 1120.02
+
+birth = 0
+
+nobirth.n1 = N * p2
+nobirth.na = nobirth.n1
+nobirth.n2 = (N + birth) * p2
+nobirth.m2 = nobirth.na * p2
+
+N_nobirth = chapman(nobirth.n1, nobirth.n2, nobirth.m2)
+#997.76
+var_nobirth = ch_var(nobirth.n1, nobirth.n2, nobirth.m2)
+#2205.69
+CI.est(N_nobirth, var_nobirth)
+#905.7 - 1089.8
+
+#(same as no death)
+
+####################################################################
+#tag retention
+
+
+#no births, survival = 1
+tag_retention = 0.7
+
+tag.n1 = N * p2
+tag.na = tag.n1 * tag_retention
+#tag retention only affects marked so n2 is the same
+tag.n2 = N * p2
+tag.m2 = tag.na * p2
+
+N_tag = chapman(tag.n1, tag.n2, tag.m2)
+#1422
+var_tag = ch_var(tag.n1, tag.n2, tag.m2)
+#9162.46
+CI.est(N_tag, var_tag)
+#1234.405 - 1609.630
+
+tag_retention = 1
+
+notag.n1 = N * p2
+notag.na = notag.n1 * tag_retention
+notag.n2 = N * p2
+notag.m2 = notag.na * p2
+
+#should be same as no death and no birth
+
+N_notag = chapman(notag.n1, notag.n2, notag.m2)
+#997
+var_notag = ch_var(notag.n1, notag.n2, notag.m2)
+#2205
+CI.est(N_notag, var_notag)
+#905.713 - 1089.815
+
+#lab 11
+
+chapman = function(n1, n2, m2) {
+  chap = ((n1 + 1) * (n2 + 1)) / (m2 + 1) - 1
+  return(chap)
+}
+
+ch_var = function(n1, n2, m2){
+  
+  var = ((n1 + 1) * (n2 + 1) * (n1 - m2) * (n2 - m2)) / ((m2 + 1)^2 * (m2 + 2))
+  return (var)
+  
+}
+
+CI.est = function (N, v_N) {
+  
+  ub = N + (1.96 * sqrt(v_N))
+  lb = N - (1.96 * sqrt(v_N))
+  
+  ci = c(lb, ub)
+  return(ci)
+}
+
+#population size
+N = 1000
+#capture probability
+p = 0.4
+
+
+#111111111111111111111111111111111111111111111111111111
+
+#tag retention less than 1
+#immigration = 0
+#surivival = 1
+tag_retention = 0.3
+
+#first day trapping
+tag.n1 = N * p
+#ones aailable for seond day
+tag.na = tag.n1 * tag_retention
+#second trap day
+#tag retention only affects marked so n2 is the same
+tag.n2 = N * p
+tag.m2 = tag.na * p
+
+N_tag = chapman(tag.n1, tag.n2, tag.m2)
+#3280.653
+var_tag = ch_var(tag.n1, tag.n2, tag.m2)
+#165963.2
+CI.est(N_tag, var_tag)
+#2482.177 - 4079.129
+
+#perfect tag retention
+
+tag_retention = 1
+
+notag.n1 = N * p
+notag.na = notag.n1 * tag_retention
+notag.n2 = N * p
+notag.m2 = notag.na * p
+
+N_notag = chapman(notag.n1, notag.n2, notag.m2)
+#997.764
+var_notag = ch_var(notag.n1, notag.n2, notag.m2)
+#2205.69
+CI.est(N_notag, var_notag)
+#905.713 - 1089.815
+
+
+#22222222222222222222222222222222222222222222222222222
+
+#50 immigrants
+#tag retention = 1
+#survival = 1
+
+immigration = 50
+
+immigration.n1 = N * p
+#avavilable for recapture stays the same
+immigration.na = immigration.n1
+#second time trapping there are extra individuals
+immigration.n2 = (N + immigration) * p
+immigration.m2 = immigration.na * p
+
+N_immigration = chapman(immigration.n1, immigration.n2, immigration.m2)
+#1047.578
+var_immigration = ch_var(immigration.n1, immigration.n2, immigration.m2)
+#2508.674
+CI.est(N_immigration, var_immigration)
+#949.4078 - 1145.7475
+
+immigration = 0
+
+noim.n1 = N * p
+noim.na = noim.n1
+noim.n2 = (N + immigration) * p
+noim.m2 = noim.na * p
+
+N_noimm = chapman(noim.n1, noim.n2, noim.m2)
+#997.764
+var_noimm = ch_var(noim.n1, noim.n2, noim.m2)
+#2205.69
+CI.est(N_noimm, var_noimm)
+#905.713 - 1089.815
+
+#bonus
+
+#emigration rate = 0.3, 0.7 stay
+#tag retention = 0.9
+#births = 30
+#immigration = 25
+
+BiIm = 55
+TagRet = 0.9
+#treating stay like proportion left alive in tutorial
+stay = 0.7
+
+combo.n1 = N * p
+combo.na = combo.n1 * stay * TagRet
+combo.n2 = (N + BiIm) * stay * p
+combo.m2 = combo.na * p
+
+N_combo = chapman(combo.n1, combo.n2, combo.m2)
+#1166.548
+var_combo = ch_var(combo.n1, combo.n2, combo.m2)
+#6495.885
+CI.est(N_combo, var_combo)
+#1008.578 - 1324.518
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
